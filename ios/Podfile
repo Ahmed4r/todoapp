@@ -1,5 +1,3 @@
-# Uncomment to define a global platform for your project
-platform :ios, '16.0'
 
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 

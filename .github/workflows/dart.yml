@@ -12,30 +12,20 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: "stable"
           architecture: x64
 
       - run: flutter pub get
 
-      # Ensure the Podfile has the correct platform
-      - name: Set iOS deployment target
-        run: |
-          cd ios
-          if ! grep -q "platform :ios, '15.5'" Podfile; then
-            echo "platform :ios, '15.5'" | cat - Podfile > temp && mv temp Podfile
-          fi
-          cd ..
-      # Clean and reinstall CocoaPods
-      - name: Clean and update CocoaPods
+      # Clean Podfile.lock and install CocoaPods (do not modify Podfile in CI)
+      - name: Clean and install CocoaPods
         run: |
           rm -f ios/Podfile.lock
           cd ios
           pod repo update
-          pod deintegrate
-          pod install
+          pod install --repo-update
           cd ..
       - run: flutter build ios --release --no-codesign
-
       - run: mkdir Payload
         working-directory: build/ios/iphoneos
 
