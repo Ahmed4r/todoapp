@@ -34,176 +34,199 @@ class TaskCard extends StatelessWidget {
             opacity: animation.value,
             child: Container(
               margin: EdgeInsets.only(bottom: 12.h),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16.w),
-                  onTap: onTap,
-                  child: Container(
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16.w),
-                      border: Border.all(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.outline.withValues(alpha: 0.1),
+              child: Dismissible(
+                key: Key(task.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF3B30),
+                    borderRadius: BorderRadius.circular(16.w),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Icon(
+                        Icons.delete_outline,
+                        color: Colors.white,
+                        size: 24.w,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10.w,
-                          offset: Offset(0, 2.h),
+                    ],
+                  ),
+                ),
+                onDismissed: (direction) => onDelete(),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16.w),
+                    onTap: onTap,
+                    child: Container(
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16.w),
+                        border: Border.all(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.outline.withValues(alpha: 0.1),
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            _buildCheckbox(),
-                            SizedBox(width: 16.w),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    task.title,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          decoration: task.isCompleted
-                                              ? TextDecoration.lineThrough
-                                              : null,
-                                          color: task.isCompleted
-                                              ? Theme.of(context)
-                                                    .colorScheme
-                                                    .onSurface
-                                                    .withValues(alpha: 0.5)
-                                              : Theme.of(
-                                                  context,
-                                                ).colorScheme.onSurface,
-                                          fontSize: 16.sp,
-                                        ),
-                                  ),
-                                  if (task.description.isNotEmpty) ...[
-                                    SizedBox(height: 4.h),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10.w,
+                            offset: Offset(0, 2.h),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              _buildCheckbox(),
+                              SizedBox(width: 16.w),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                                     Text(
-                                      task.description,
+                                      task.title,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodySmall
+                                          .titleMedium
                                           ?.copyWith(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withValues(alpha: 0.6),
+                                            fontWeight: FontWeight.w600,
                                             decoration: task.isCompleted
                                                 ? TextDecoration.lineThrough
                                                 : null,
-                                            fontSize: 14.sp,
+                                            color: task.isCompleted
+                                                ? Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurface
+                                                      .withValues(alpha: 0.5)
+                                                : Theme.of(
+                                                    context,
+                                                  ).colorScheme.onSurface,
+                                            fontSize: 16.sp,
                                           ),
                                     ),
-                                  ],
-                                  if (task.dueDate != null) ...[
+                                    if (task.description.isNotEmpty) ...[
+                                      SizedBox(height: 4.h),
+                                      Text(
+                                        task.description,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withValues(alpha: 0.6),
+                                              decoration: task.isCompleted
+                                                  ? TextDecoration.lineThrough
+                                                  : null,
+                                              fontSize: 14.sp,
+                                            ),
+                                      ),
+                                    ],
+                                    if (task.dueDate != null) ...[
+                                      SizedBox(height: 8.h),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.schedule_rounded,
+                                            size: 14.w,
+                                            color: ColorUtils.getDueDateColor(
+                                              task,
+                                            ),
+                                          ),
+                                          SizedBox(width: 4.w),
+                                          Expanded(
+                                            child: Text(
+                                              ColorUtils.getDueDateTimeText(
+                                                task,
+                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    color:
+                                                        ColorUtils.getDueDateColor(
+                                                          task,
+                                                        ),
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 12.sp,
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                     SizedBox(height: 8.h),
                                     Row(
                                       children: [
-                                        Icon(
-                                          Icons.schedule_rounded,
-                                          size: 14.w,
-                                          color: ColorUtils.getDueDateColor(
-                                            task,
-                                          ),
-                                        ),
-                                        SizedBox(width: 4.w),
-                                        Expanded(
-                                          child: Text(
-                                            ColorUtils.getDueDateTimeText(task),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color:
-                                                      ColorUtils.getDueDateColor(
-                                                        task,
-                                                      ),
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 12.sp,
-                                                ),
-                                          ),
-                                        ),
+                                        _buildCategoryChip(),
+                                        SizedBox(width: 8.w),
+                                        _buildPriorityChip(),
                                       ],
                                     ),
                                   ],
-                                  SizedBox(height: 8.h),
-                                  Row(
-                                    children: [
-                                      _buildCategoryChip(),
-                                      SizedBox(width: 8.w),
-                                      _buildPriorityChip(),
-                                    ],
+                                ),
+                              ),
+                              Column(
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (context) =>
+                                            PomodoroBottomSheet(task: task),
+                                      );
+                                    },
+                                    icon: Icon(
+                                      Icons.timer_outlined,
+                                      size: 20.w,
+                                    ),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    tooltip: 'Start study timer',
+                                  ),
+                                  IconButton(
+                                    onPressed: onEdit,
+                                    icon: Icon(Icons.edit_outlined, size: 20.w),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.secondary,
+                                    tooltip: 'Edit task',
+                                  ),
+
+                                  IconButton(
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (context) =>
+                                            NotesBottomSheet(task: task),
+                                      );
+                                    },
+                                    icon: Icon(
+                                      Icons.note_add_outlined,
+                                      size: 20.w,
+                                    ),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.tertiary,
+                                    tooltip: 'View/Add Notes',
                                   ),
                                 ],
                               ),
-                            ),
-                            Column(
-                              children: [
-                                IconButton(
-                                  onPressed: () {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      backgroundColor: Colors.transparent,
-                                      builder: (context) =>
-                                          PomodoroBottomSheet(task: task),
-                                    );
-                                  },
-                                  icon: Icon(Icons.timer_outlined, size: 20.w),
-                                  color: Theme.of(context).colorScheme.primary,
-                                  tooltip: 'Start study timer',
-                                ),
-                                IconButton(
-                                  onPressed: onEdit,
-                                  icon: Icon(Icons.edit_outlined, size: 20.w),
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.secondary,
-                                  tooltip: 'Edit task',
-                                ),
-                                IconButton(
-                                  onPressed: onDelete,
-                                  icon: Icon(
-                                    Icons.delete_outline_rounded,
-                                    size: 20.w,
-                                  ),
-                                  color: const Color(0xFFFF3B30),
-                                  tooltip: 'Delete task',
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      backgroundColor: Colors.transparent,
-                                      builder: (context) =>
-                                          NotesBottomSheet(task: task),
-                                    );
-                                  },
-                                  icon: Icon(
-                                    Icons.note_add_outlined,
-                                    size: 20.w,
-                                  ),
-                                  color: Theme.of(context).colorScheme.tertiary,
-                                  tooltip: 'View/Add Notes',
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
