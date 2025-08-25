@@ -53,41 +53,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
 
     // Add sample tasks
-    _tasks.addAll([
-      Task(
-        id: '1',
-        title: 'Complete Flutter project',
-        description: 'Finish the todo app with all features',
-        isCompleted: false,
-        dueDate: DateTime.now().add(const Duration(days: 1)),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        priority: TaskPriority.high,
-        category: TaskCategory.work,
-      ),
-      Task(
-        id: '2',
-        title: 'Buy groceries',
-        description: 'Milk, bread, eggs, and vegetables',
-        isCompleted: true,
-        dueDate: DateTime.now(),
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        updatedAt: DateTime.now(),
-        priority: TaskPriority.medium,
-        category: TaskCategory.personal,
-      ),
-      Task(
-        id: '3',
-        title: 'Study for exam',
-        description: 'Review chapters 5-8 for the final exam',
-        isCompleted: false,
-        dueDate: DateTime.now().add(const Duration(days: 3)),
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        updatedAt: DateTime.now(),
-        priority: TaskPriority.urgent,
-        category: TaskCategory.study,
-      ),
-    ]);
+    _tasks.addAll([]);
 
     _fabController.forward();
     _statsController.forward();

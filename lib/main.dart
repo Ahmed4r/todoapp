@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'screens/home_page.dart';
 import 'screens/splash_screen.dart';
 import 'services/theme_service.dart';
+import 'services/study_note_service.dart';
 // import 'services/notification_service.dart';
 
 void main() async {
@@ -11,7 +13,12 @@ void main() async {
   // Notification service initialization commented out for now
   // await NotificationService().initialize();
 
-  runApp(const TodoApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => StudyNoteService(),
+      child: const TodoApp(),
+    ),
+  );
 }
 
 class TodoApp extends StatefulWidget {

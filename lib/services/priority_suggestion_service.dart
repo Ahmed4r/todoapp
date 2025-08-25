@@ -31,7 +31,7 @@ class PrioritySuggestionService {
     priorityScore += _getCategoryPriorityScore(category);
 
     // Keyword analysis in title and description
-    priorityScore += _analyzeKeywords(title + ' ' + description);
+    priorityScore += _analyzeKeywords('$title $description');
 
     // Convert score to priority
     return _convertScoreToPriority(priorityScore);

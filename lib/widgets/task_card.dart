@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/task.dart';
 import '../utils/color_utils.dart';
 import 'pomodoro_bottom_sheet.dart';
+import 'notes_bottom_sheet.dart';
 
 class TaskCard extends StatelessWidget {
   final Task task;
@@ -56,119 +57,149 @@ class TaskCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: Column(
                       children: [
-                        _buildCheckbox(),
-                        SizedBox(width: 16.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                task.title,
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      decoration: task.isCompleted
-                                          ? TextDecoration.lineThrough
-                                          : null,
-                                      color: task.isCompleted
-                                          ? Theme.of(context)
+                        Row(
+                          children: [
+                            _buildCheckbox(),
+                            SizedBox(width: 16.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    task.title,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          decoration: task.isCompleted
+                                              ? TextDecoration.lineThrough
+                                              : null,
+                                          color: task.isCompleted
+                                              ? Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withValues(alpha: 0.5)
+                                              : Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurface,
+                                          fontSize: 16.sp,
+                                        ),
+                                  ),
+                                  if (task.description.isNotEmpty) ...[
+                                    SizedBox(height: 4.h),
+                                    Text(
+                                      task.description,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                            color: Theme.of(context)
                                                 .colorScheme
                                                 .onSurface
-                                                .withValues(alpha: 0.5)
-                                          : Theme.of(
-                                              context,
-                                            ).colorScheme.onSurface,
-                                      fontSize: 16.sp,
-                                    ),
-                              ),
-                              if (task.description.isNotEmpty) ...[
-                                SizedBox(height: 4.h),
-                                Text(
-                                  task.description,
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withValues(alpha: 0.6),
-                                        decoration: task.isCompleted
-                                            ? TextDecoration.lineThrough
-                                            : null,
-                                        fontSize: 14.sp,
-                                      ),
-                                ),
-                              ],
-                              if (task.dueDate != null) ...[
-                                SizedBox(height: 8.h),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.schedule_rounded,
-                                      size: 14.w,
-                                      color: ColorUtils.getDueDateColor(task),
-                                    ),
-                                    SizedBox(width: 4.w),
-                                    Expanded(
-                                      child: Text(
-                                        ColorUtils.getDueDateTimeText(task),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(
-                                              color: ColorUtils.getDueDateColor(
-                                                task,
-                                              ),
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 12.sp,
-                                            ),
-                                      ),
+                                                .withValues(alpha: 0.6),
+                                            decoration: task.isCompleted
+                                                ? TextDecoration.lineThrough
+                                                : null,
+                                            fontSize: 14.sp,
+                                          ),
                                     ),
                                   ],
-                                ),
-                              ],
-                              SizedBox(height: 8.h),
-                              Row(
-                                children: [
-                                  _buildCategoryChip(),
-                                  SizedBox(width: 8.w),
-                                  _buildPriorityChip(),
+                                  if (task.dueDate != null) ...[
+                                    SizedBox(height: 8.h),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.schedule_rounded,
+                                          size: 14.w,
+                                          color: ColorUtils.getDueDateColor(
+                                            task,
+                                          ),
+                                        ),
+                                        SizedBox(width: 4.w),
+                                        Expanded(
+                                          child: Text(
+                                            ColorUtils.getDueDateTimeText(task),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color:
+                                                      ColorUtils.getDueDateColor(
+                                                        task,
+                                                      ),
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 12.sp,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                  SizedBox(height: 8.h),
+                                  Row(
+                                    children: [
+                                      _buildCategoryChip(),
+                                      SizedBox(width: 8.w),
+                                      _buildPriorityChip(),
+                                    ],
+                                  ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                        Column(
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (context) =>
-                                      PomodoroBottomSheet(task: task),
-                                );
-                              },
-                              icon: Icon(Icons.timer_outlined, size: 20.w),
-                              color: Theme.of(context).colorScheme.primary,
-                              tooltip: 'Start study timer',
                             ),
-                            IconButton(
-                              onPressed: onEdit,
-                              icon: Icon(Icons.edit_outlined, size: 20.w),
-                              color: Theme.of(context).colorScheme.secondary,
-                              tooltip: 'Edit task',
-                            ),
-                            IconButton(
-                              onPressed: onDelete,
-                              icon: Icon(
-                                Icons.delete_outline_rounded,
-                                size: 20.w,
-                              ),
-                              color: const Color(0xFFFF3B30),
-                              tooltip: 'Delete task',
+                            Column(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (context) =>
+                                          PomodoroBottomSheet(task: task),
+                                    );
+                                  },
+                                  icon: Icon(Icons.timer_outlined, size: 20.w),
+                                  color: Theme.of(context).colorScheme.primary,
+                                  tooltip: 'Start study timer',
+                                ),
+                                IconButton(
+                                  onPressed: onEdit,
+                                  icon: Icon(Icons.edit_outlined, size: 20.w),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary,
+                                  tooltip: 'Edit task',
+                                ),
+                                IconButton(
+                                  onPressed: onDelete,
+                                  icon: Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 20.w,
+                                  ),
+                                  color: const Color(0xFFFF3B30),
+                                  tooltip: 'Delete task',
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (context) =>
+                                          NotesBottomSheet(task: task),
+                                    );
+                                  },
+                                  icon: Icon(
+                                    Icons.note_add_outlined,
+                                    size: 20.w,
+                                  ),
+                                  color: Theme.of(context).colorScheme.tertiary,
+                                  tooltip: 'View/Add Notes',
+                                ),
+                              ],
                             ),
                           ],
                         ),

@@ -51,6 +51,15 @@
 	<array>
 		<string>remote-notification</string>
 		<string>background-processing</string>
+		<string>audio</string>
+		<string>fetch</string>
+		<string>processing</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to the microphone to record voice notes for your tasks.</string>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 </dict>
 </plist>

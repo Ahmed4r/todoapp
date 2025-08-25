@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../services/pomodoro_service.dart';
+import '../services/study_note_service.dart';
 import '../models/task.dart';
+import 'level_progress.dart';
+import 'study_notes_panel.dart';
 
 class PomodoroTimer extends StatefulWidget {
   final Task task;
@@ -49,7 +53,10 @@ class _PomodoroTimerState extends State<PomodoroTimer>
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.symmetric(
+        horizontal: 20.w,
+        vertical: 16.w,
+      ), // Reduced vertical padding
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(24.w),
@@ -65,12 +72,20 @@ class _PomodoroTimerState extends State<PomodoroTimer>
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildTimerHeader(),
-          SizedBox(height: 24.h),
+          SizedBox(height: 16.h), // Reduced from 24.h
           _buildTimerCircle(),
-          SizedBox(height: 24.h),
+          SizedBox(height: 16.h), // Reduced from 24.h
           _buildControls(),
           if (_pomodoroService.currentSession != null) ...[
-            SizedBox(height: 16.h),
+            SizedBox(height: 12.h),
+            LevelProgress(pomodoroService: _pomodoroService),
+            SizedBox(height: 12.h),
+            StudyNotesPanel(
+              task: widget.task,
+              sessionId: _pomodoroService.currentSession?.id,
+              noteService: Provider.of<StudyNoteService>(context),
+            ),
+            SizedBox(height: 12.h),
             _buildStats(),
           ],
         ],
@@ -127,8 +142,8 @@ class _PomodoroTimerState extends State<PomodoroTimer>
       alignment: Alignment.center,
       children: [
         SizedBox(
-          width: 200.w,
-          height: 200.w,
+          width: 180.w, // Reduced from 200.w
+          height: 180.w, // Reduced from 200.w
           child: TweenAnimationBuilder(
             tween: Tween(begin: 0.0, end: _pomodoroService.progress),
             duration: const Duration(milliseconds: 300),
@@ -156,16 +171,16 @@ class _PomodoroTimerState extends State<PomodoroTimer>
                 fontSize: 48.sp,
               ),
             ),
-            if (_pomodoroService.currentSession?.completedPomodoros != null)
-              Text(
-                '${_pomodoroService.currentSession!.completedPomodoros} pomodoros completed',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.6),
-                  fontSize: 14.sp,
-                ),
-              ),
+            // if (_pomodoroService.currentSession?.completedPomodoros != null)
+            //   Text(
+            //     '${_pomodoroService.currentSession!.completedPomodoros} pomodoros completed',
+            //     style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            //       color: Theme.of(
+            //         context,
+            //       ).colorScheme.onSurface.withOpacity(0.6),
+            //       fontSize: 13.sp,
+            //     ),
+            //   ),
           ],
         ),
       ],
@@ -288,10 +303,10 @@ class _PomodoroTimerState extends State<PomodoroTimer>
     final totalMinutes = session.totalSessionTimeInSeconds ~/ 60;
 
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(12.w), // Reduced from 16.w
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16.w),
+        borderRadius: BorderRadius.circular(12.w), // Reduced from 16.w
       ),
       child: Column(
         children: [
