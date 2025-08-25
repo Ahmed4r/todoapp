@@ -10,6 +10,32 @@ class Task {
   final TaskPriority priority;
   final TaskCategory category;
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'description': description,
+    'isCompleted': isCompleted,
+    'dueDate': dueDate?.toIso8601String(),
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+    'priority': priority.index,
+    'category': category.index,
+  };
+
+  factory Task.fromJson(Map<String, dynamic> json) => Task(
+    id: json['id'] as String,
+    title: json['title'] as String,
+    description: json['description'] as String,
+    isCompleted: json['isCompleted'] as bool,
+    dueDate: json['dueDate'] != null
+        ? DateTime.parse(json['dueDate'] as String)
+        : null,
+    createdAt: DateTime.parse(json['createdAt'] as String),
+    updatedAt: DateTime.parse(json['updatedAt'] as String),
+    priority: TaskPriority.values[json['priority'] as int],
+    category: TaskCategory.values[json['category'] as int],
+  );
+
   const Task({
     required this.id,
     required this.title,

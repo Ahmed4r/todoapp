@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
 import '../widgets/task_card.dart';
 import '../widgets/add_task_dialog.dart';
@@ -57,9 +59,34 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     _fabController.forward();
     _statsController.forward();
+    _loadTasks();
+  }
 
-    // Schedule notifications for sample tasks (disabled)
-    // _scheduleNotificationsForTasks();
+  Future<void> _loadTasks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tasksJson = prefs.getStringList('tasks') ?? [];
+      setState(() {
+        _tasks.clear();
+        _tasks.addAll(
+          tasksJson.map((json) => Task.fromJson(jsonDecode(json))).toList(),
+        );
+      });
+    } catch (e) {
+      debugPrint('Error loading tasks: $e');
+    }
+  }
+
+  Future<void> _saveTasks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tasksJson = _tasks
+          .map((task) => jsonEncode(task.toJson()))
+          .toList();
+      await prefs.setStringList('tasks', tasksJson);
+    } catch (e) {
+      debugPrint('Error saving tasks: $e');
+    }
   }
 
   @override
@@ -399,6 +426,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       _tasks.add(newTask);
     });
+    _saveTasks();
 
     // Schedule notification for the new task
     if (dueDate != null) {
@@ -442,6 +470,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         }
       }
     });
+    _saveTasks();
   }
 
   void _toggleTaskComplete(Task task) {
@@ -463,6 +492,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         }
       }
     });
+    _saveTasks();
   }
 
   void _deleteTask(Task task) {
@@ -472,5 +502,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       _tasks.removeWhere((t) => t.id == task.id);
     });
+    _saveTasks();
   }
 }
