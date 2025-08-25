@@ -16,16 +16,12 @@ jobs:
           channel: stable
           cache: false
 
+      - run: flutter clean
       - run: flutter pub get
+      - run: flutter precache --ios
 
       - name: Prepare iOS Pods
         run: |
-          cd ios
-          pod repo update
-          pod install
-
-      - run: flutter precache --ios
-      - run: |
           cd ios
           pod repo update
           pod install
