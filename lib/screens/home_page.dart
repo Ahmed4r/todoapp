@@ -6,7 +6,7 @@ import '../models/task.dart';
 import '../widgets/task_card.dart';
 import '../widgets/add_task_dialog.dart';
 import '../widgets/edit_task_dialog.dart';
-// import '../services/notification_service.dart';
+import '../services/notification_service.dart';
 
 class HomePage extends StatefulWidget {
   final bool isDarkMode;
@@ -24,8 +24,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final List<Task> _tasks = [];
-  // NotificationService disabled/commented for CI testing
-  // final NotificationService _notificationService = NotificationService();
+  final NotificationService _notificationService = NotificationService();
 
   late AnimationController _fabController;
   late AnimationController _statsController;
@@ -430,13 +429,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     // Schedule notification for the new task
     if (dueDate != null) {
-      // _notificationService.scheduleTaskReminder(newTask);
+      _notificationService.scheduleTaskReminder(newTask);
 
-      // Show immediate notification for confirmation (disabled)
-      // _notificationService.showImmediateNotification(
-      //   title: 'Task Added',
-      //   body: 'Reminder set for "$title"',
-      // );
+      // Show immediate notification for confirmation
+      _notificationService.showImmediateNotification(
+        title: 'Task Added',
+        body: 'Reminder set for "$title"',
+      );
     }
   }
 
@@ -448,8 +447,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     TaskPriority priority,
     TaskCategory category,
   ) {
-    // Cancel existing notifications for this task (disabled)
-    // _notificationService.cancelTaskReminder(task);
+    // Cancel existing notifications for this task
+    _notificationService.cancelTaskReminder(task);
 
     setState(() {
       final index = _tasks.indexWhere((t) => t.id == task.id);
@@ -466,7 +465,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
         // Schedule new notification if task has due date and is not completed
         if (dueDate != null && !updatedTask.isCompleted) {
-          // _notificationService.scheduleTaskReminder(updatedTask);
+          _notificationService.scheduleTaskReminder(updatedTask);
         }
       }
     });
@@ -483,12 +482,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
         _tasks[index] = updatedTask;
 
-        // Cancel notifications if task is completed (disabled)
+        // Cancel notifications if task is completed
         if (updatedTask.isCompleted) {
-          // _notificationService.cancelTaskReminder(updatedTask);
+          _notificationService.cancelTaskReminder(updatedTask);
         } else if (updatedTask.dueDate != null) {
-          // Re-schedule notifications if task is uncompleted (disabled)
-          // _notificationService.scheduleTaskReminder(updatedTask);
+          // Re-schedule notifications if task is uncompleted
+          _notificationService.scheduleTaskReminder(updatedTask);
         }
       }
     });
@@ -496,8 +495,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void _deleteTask(Task task) {
-    // Cancel notifications for the task being deleted (disabled)
-    // _notificationService.cancelTaskReminder(task);
+    // Cancel notifications for the task being deleted
+    _notificationService.cancelTaskReminder(task);
 
     setState(() {
       _tasks.removeWhere((t) => t.id == task.id);

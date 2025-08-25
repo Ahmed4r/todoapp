@@ -5,13 +5,13 @@ import 'screens/home_page.dart';
 import 'screens/splash_screen.dart';
 import 'services/theme_service.dart';
 import 'services/study_note_service.dart';
-// import 'services/notification_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Notification service initialization commented out for now
-  // await NotificationService().initialize();
+  // Initialize notification service
+  await NotificationService().initialize();
 
   runApp(
     ChangeNotifierProvider(

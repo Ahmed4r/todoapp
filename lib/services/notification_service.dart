@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-// The project currently has `flutter_local_notifications` and `timezone`
-// commented out in `pubspec.yaml`. Provide a safe no-op implementation so
-// the rest of the app can compile and run without those packages. If you
-// re-enable the packages in `pubspec.yaml`, you can restore the full
-// implementation that uses the plugin and timezone APIs.
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 import '../models/task.dart';
 
 class NotificationService {
@@ -11,43 +9,103 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  // Notifications are disabled in `pubspec.yaml` for CI/local runs.
-  // The full implementation that uses `flutter_local_notifications` and
-  // `timezone` is intentionally omitted while those packages are commented
-  // out so the app can compile. Re-enable the packages and restore the
-  // full implementation when ready.
-
-  // No-op implementation below -------------------------------------------------
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
-    debugPrint(
-      'NotificationService: initialize() called but notifications are disabled via pubspec.',
+    tz.initializeTimeZones();
+
+    const DarwinInitializationSettings iOSSettings =
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+          defaultPresentAlert: true,
+          defaultPresentBadge: true,
+          defaultPresentSound: true,
+        );
+
+    const AndroidInitializationSettings androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const InitializationSettings initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iOSSettings,
     );
-    // No plugin initialization because flutter_local_notifications is disabled.
+
+    await _flutterLocalNotificationsPlugin.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        debugPrint('Notification clicked: ${response.payload}');
+      },
+    );
+
+    // Request permissions for iOS
+    await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
   }
 
   Future<void> scheduleTaskReminder(Task task) async {
     if (task.dueDate == null) return;
-    debugPrint(
-      'NotificationService: scheduleTaskReminder() skipped for task ${task.id} because notifications are disabled.',
+
+    final scheduledDate = tz.TZDateTime.from(task.dueDate!, tz.local);
+
+    // Don't schedule if the date is in the past
+    if (scheduledDate.isBefore(DateTime.now())) return;
+
+    const androidDetails = AndroidNotificationDetails(
+      'task_reminders',
+      'Task Reminders',
+      channelDescription: 'Notifications for task reminders',
+      importance: Importance.max,
+      priority: Priority.high,
+      styleInformation: BigTextStyleInformation(''),
     );
+
+    const iOSDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      interruptionLevel: InterruptionLevel.active,
+    );
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iOSDetails,
+    );
+
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
+      task.id.hashCode,
+      'Task Reminder: ${task.title}',
+      task.description.isNotEmpty
+          ? task.description
+          : 'Your task "${task.title}" is due',
+      scheduledDate,
+      notificationDetails,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      payload: task.id,
+    );
+
+    debugPrint('Scheduled notification for task ${task.id} at $scheduledDate');
   }
 
   Future<void> cancelTaskReminder(Task task) async {
-    debugPrint(
-      'NotificationService: cancelTaskReminder() skipped for task ${task.id}.',
-    );
+    await _flutterLocalNotificationsPlugin.cancel(task.id.hashCode);
+    debugPrint('Cancelled notification for task ${task.id}');
   }
 
   Future<void> cancelAllReminders() async {
-    debugPrint('NotificationService: cancelAllReminders() skipped.');
+    await _flutterLocalNotificationsPlugin.cancelAll();
+    debugPrint('Cancelled all notifications');
   }
 
-  Future<List<dynamic>> getPendingNotifications() async {
-    debugPrint(
-      'NotificationService: getPendingNotifications() returning empty list.',
-    );
-    return <dynamic>[];
+  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
+    return await _flutterLocalNotificationsPlugin.pendingNotificationRequests();
   }
 
   Future<void> showImmediateNotification({
@@ -55,8 +113,32 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
-    debugPrint(
-      'NotificationService: showImmediateNotification() called but disabled. title=$title body=$body payload=$payload',
+    const androidDetails = AndroidNotificationDetails(
+      'immediate_notifications',
+      'Immediate Notifications',
+      channelDescription: 'Notifications that should be shown immediately',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const iOSDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      interruptionLevel: InterruptionLevel.timeSensitive,
+    );
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iOSDetails,
+    );
+
+    await _flutterLocalNotificationsPlugin.show(
+      DateTime.now().millisecondsSinceEpoch.hashCode,
+      title,
+      body,
+      notificationDetails,
+      payload: payload,
     );
   }
 }
