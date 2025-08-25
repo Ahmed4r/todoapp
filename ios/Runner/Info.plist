@@ -61,5 +61,9 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>NSCriticalAlertsEnabled</key>
+	<true/>
+	<key>NSCalendarsUsageDescription</key>
+	<string>This app needs calendar access to schedule task reminders effectively.</string>
 </dict>
 </plist>

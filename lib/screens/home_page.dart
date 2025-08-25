@@ -6,6 +6,7 @@ import '../models/task.dart';
 import '../widgets/task_card.dart';
 import '../widgets/add_task_dialog.dart';
 import '../widgets/edit_task_dialog.dart';
+import '../widgets/app_bar_widget.dart';
 import '../services/notification_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -34,6 +35,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    // Initialize notifications
+    _initializeNotifications();
 
     _fabController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -88,6 +92,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  Future<void> _initializeNotifications() async {
+    try {
+      await _notificationService.initialize();
+      debugPrint('Notifications initialized successfully');
+    } catch (e) {
+      debugPrint('Error initializing notifications: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,68 +122,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildAppBar() {
-    return Container(
-      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 10.h),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Tasks',
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 32.sp,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  '${_tasks.where((task) => task.isCompleted).length} of ${_tasks.length} completed',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.6),
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14.sp,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(12.w),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10.w,
-                  offset: Offset(0, 2.h),
-                ),
-              ],
-            ),
-            child: IconButton(
-              onPressed: () {
-                widget.onThemeChanged(!widget.isDarkMode);
-                _fabController.forward(from: 0.0);
-              },
-              icon: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Icon(
-                  widget.isDarkMode
-                      ? Icons.light_mode_rounded
-                      : Icons.dark_mode_rounded,
-                  key: ValueKey(widget.isDarkMode),
-                  color: Theme.of(context).colorScheme.onSurface,
-                  size: 24.w,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AppBarWidget(
+      isDarkMode: widget.isDarkMode,
+      onThemeChanged: () {
+        widget.onThemeChanged(!widget.isDarkMode);
+        _fabController.forward(from: 0.0);
+      },
+      completedTasks: _tasks.where((task) => task.isCompleted).length,
+      totalTasks: _tasks.length,
     );
   }
 

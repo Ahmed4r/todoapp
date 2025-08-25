@@ -1,17 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'screens/home_page.dart';
 import 'screens/splash_screen.dart';
 import 'services/theme_service.dart';
 import 'services/study_note_service.dart';
 import 'services/notification_service.dart';
 
-void main() async {
+Future<void> main() async {
+  // Ensure Flutter bindings and platform channels are initialized
   WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    // Initialize timezone database
+    tz.initializeTimeZones();
+    
+    // Get the local timezone
+    final String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
+    if (timeZoneName.isNotEmpty) {
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+    }
+    
+    // Initialize notification service
+    final notificationService = NotificationService();
+    await notificationService.initialize();
+  } catch (e) {
+    debugPrint('Error during initialization: $e');
+    // Set a default timezone if we can't get the local one
+    tz.setLocalLocation(tz.getLocation('UTC'));
+  }
 
-  // Initialize notification service
-  await NotificationService().initialize();
 
   runApp(
     ChangeNotifierProvider(

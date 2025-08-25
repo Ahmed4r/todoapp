@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../services/pomodoro_service.dart';
-import '../services/study_note_service.dart';
 import '../models/task.dart';
-import 'study_notes_panel.dart';
 
 class PomodoroTimer extends StatefulWidget {
   final Task task;
