@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/task.dart';
 import '../utils/color_utils.dart';
+import 'pomodoro_bottom_sheet.dart';
 
 class TaskCard extends StatelessWidget {
   final Task task;
@@ -141,9 +142,23 @@ class TaskCard extends StatelessWidget {
                         Column(
                           children: [
                             IconButton(
+                              onPressed: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (context) =>
+                                      PomodoroBottomSheet(task: task),
+                                );
+                              },
+                              icon: Icon(Icons.timer_outlined, size: 20.w),
+                              color: Theme.of(context).colorScheme.primary,
+                              tooltip: 'Start study timer',
+                            ),
+                            IconButton(
                               onPressed: onEdit,
                               icon: Icon(Icons.edit_outlined, size: 20.w),
-                              color: Theme.of(context).colorScheme.primary,
+                              color: Theme.of(context).colorScheme.secondary,
                               tooltip: 'Edit task',
                             ),
                             IconButton(

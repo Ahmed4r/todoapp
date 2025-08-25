@@ -3,15 +3,19 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/task.dart';
 import '../utils/color_utils.dart';
 import '../utils/icon_utils.dart';
+import '../services/priority_suggestion_service.dart';
 
 class AddTaskDialog extends StatefulWidget {
-  final Function(String title, String description, DateTime? dueDate,
-      TaskPriority priority, TaskCategory category) onAddTask;
+  final Function(
+    String title,
+    String description,
+    DateTime? dueDate,
+    TaskPriority priority,
+    TaskCategory category,
+  )
+  onAddTask;
 
-  const AddTaskDialog({
-    super.key,
-    required this.onAddTask,
-  });
+  const AddTaskDialog({super.key, required this.onAddTask});
 
   @override
   State<AddTaskDialog> createState() => _AddTaskDialogState();
@@ -30,6 +34,36 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
     super.initState();
     _taskController.clear();
     _descriptionController.clear();
+
+    // Add listeners for auto-priority suggestion
+    _taskController.addListener(_updateSuggestedPriority);
+    _descriptionController.addListener(_updateSuggestedPriority);
+  }
+
+  @override
+  void dispose() {
+    _taskController.removeListener(_updateSuggestedPriority);
+    _descriptionController.removeListener(_updateSuggestedPriority);
+    _taskController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  void _updateSuggestedPriority() {
+    if (_taskController.text.isNotEmpty) {
+      final suggestedPriority = PrioritySuggestionService.suggestPriority(
+        dueDate: selectedDate != null ? _getDueDateTime() : null,
+        category: selectedCategory,
+        title: _taskController.text,
+        description: _descriptionController.text,
+      );
+
+      if (suggestedPriority != selectedPriority) {
+        setState(() {
+          selectedPriority = suggestedPriority;
+        });
+      }
+    }
   }
 
   @override
@@ -50,10 +84,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.2),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(2.w),
                 ),
               ),
@@ -62,10 +95,10 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
             Text(
               'New Task',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 24.sp,
-                  ),
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 24.sp,
+              ),
             ),
             SizedBox(height: 20.h),
             Expanded(
@@ -96,92 +129,99 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                       maxLines: 3,
                     ),
                     SizedBox(height: 16.h),
-                    Row(
+                    Column(
                       children: [
-                        Expanded(
-                          child: DropdownButtonFormField<TaskPriority>(
-                            value: selectedPriority,
-                            decoration: InputDecoration(
-                              labelText: 'Priority',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.w),
-                              ),
-                              prefixIcon:
-                                  Icon(Icons.priority_high_rounded, size: 20.w),
+                        DropdownButtonFormField<TaskPriority>(
+                          value: selectedPriority,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: 'Priority',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.w),
                             ),
-                            items: TaskPriority.values.map((priority) {
-                              return DropdownMenuItem(
-                                value: priority,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      IconUtils.getPriorityIcon(priority),
-                                      color:
-                                          ColorUtils.getPriorityColor(priority),
-                                      size: 16.w,
-                                    ),
-                                    SizedBox(width: 6.w),
-                                    Flexible(
-                                      child: Text(
-                                        _getPriorityShortName(priority),
-                                        style: TextStyle(fontSize: 13.sp),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedPriority = value!;
-                              });
-                            },
+                            prefixIcon: Icon(
+                              Icons.priority_high_rounded,
+                              size: 20.w,
+                            ),
+                            suffixIcon: Tooltip(
+                              message: 'Auto-suggested based on task details',
+                              child: Icon(
+                                Icons.auto_awesome_rounded,
+                                size: 16.w,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
                           ),
+                          items: TaskPriority.values.map((priority) {
+                            return DropdownMenuItem(
+                              value: priority,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    IconUtils.getPriorityIcon(priority),
+                                    color: ColorUtils.getPriorityColor(
+                                      priority,
+                                    ),
+                                    size: 16.w,
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Text(
+                                    _getPriorityShortName(priority),
+                                    style: TextStyle(fontSize: 13.sp),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedPriority = value!;
+                            });
+                          },
                         ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: DropdownButtonFormField<TaskCategory>(
-                            value: selectedCategory,
-                            decoration: InputDecoration(
-                              labelText: 'Category',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.w),
-                              ),
-                              prefixIcon:
-                                  Icon(Icons.category_rounded, size: 20.w),
+                        SizedBox(height: 16.h),
+                        DropdownButtonFormField<TaskCategory>(
+                          value: selectedCategory,
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: 'Category',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12.w),
                             ),
-                            items: TaskCategory.values.map((category) {
-                              return DropdownMenuItem(
-                                value: category,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      IconUtils.getCategoryIcon(category),
-                                      color:
-                                          ColorUtils.getCategoryColor(category),
-                                      size: 16.w,
-                                    ),
-                                    SizedBox(width: 6.w),
-                                    Flexible(
-                                      child: Text(
-                                        _getCategoryShortName(category),
-                                        style: TextStyle(fontSize: 12.sp),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedCategory = value!;
-                              });
-                            },
+                            prefixIcon: Icon(
+                              Icons.category_rounded,
+                              size: 20.w,
+                            ),
                           ),
+                          items: TaskCategory.values.map((category) {
+                            return DropdownMenuItem(
+                              value: category,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    IconUtils.getCategoryIcon(category),
+                                    color: ColorUtils.getCategoryColor(
+                                      category,
+                                    ),
+                                    size: 16.w,
+                                  ),
+                                  SizedBox(width: 8.w),
+                                  Text(
+                                    _getCategoryShortName(category),
+                                    style: TextStyle(fontSize: 13.sp),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedCategory = value!;
+                              _updateSuggestedPriority();
+                            });
+                          },
                         ),
                       ],
                     ),
@@ -202,6 +242,7 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                               if (date != null) {
                                 setState(() {
                                   selectedDate = date;
+                                  _updateSuggestedPriority();
                                 });
                               }
                             },
@@ -209,10 +250,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                               padding: EdgeInsets.all(16.w),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outline
-                                      .withValues(alpha: 0.3),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outline.withValues(alpha: 0.3),
                                 ),
                                 borderRadius: BorderRadius.circular(12.w),
                               ),
@@ -220,8 +260,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                                 children: [
                                   Icon(
                                     Icons.calendar_today_rounded,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     size: 20.w,
                                   ),
                                   SizedBox(width: 12.w),
@@ -289,10 +330,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                               padding: EdgeInsets.all(16.w),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outline
-                                      .withValues(alpha: 0.3),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outline.withValues(alpha: 0.3),
                                 ),
                                 borderRadius: BorderRadius.circular(12.w),
                               ),
@@ -300,8 +340,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                                 children: [
                                   Icon(
                                     Icons.access_time_rounded,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     size: 20.w,
                                   ),
                                   SizedBox(width: 12.w),
@@ -358,16 +399,14 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                       Container(
                         padding: EdgeInsets.all(16.w),
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withValues(alpha: 0.1),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12.w),
                           border: Border.all(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.3),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -384,13 +423,11 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                                 children: [
                                   Text(
                                     'Reminder Set',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
+                                    style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                           fontWeight: FontWeight.w600,
                                           fontSize: 12.sp,
                                         ),
@@ -401,9 +438,9 @@ class _AddTaskDialogState extends State<AddTaskDialog> {
                                         .textTheme
                                         .bodyMedium
                                         ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
                                           fontSize: 14.sp,
                                         ),
                                   ),
