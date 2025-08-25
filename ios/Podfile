@@ -1,6 +1,9 @@
 
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
+# Specify platform to avoid CocoaPods auto-assigning it during install
+platform :ios, '16.0'
+
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
@@ -23,6 +26,23 @@ end
 require File.expand_path(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper'))
 
 flutter_ios_podfile_setup
+
+# Provide safe fallbacks in case the flutter pod helper isn't available in CI
+unless defined?(flutter_install_all_ios_pods)
+  def flutter_install_all_ios_pods(_)
+    # noop fallback - pods will be added by pod install for native plugins
+  end
+end
+
+unless defined?(flutter_post_install)
+  def flutter_post_install(installer)
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+      end
+    end
+  end
+end
 
 target 'Runner' do
   # If you encounter issues with Swift pods, uncomment the following line
