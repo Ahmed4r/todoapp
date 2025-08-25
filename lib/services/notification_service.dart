@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import '../models/task.dart';
 import 'notification_background_handler.dart';
 
@@ -77,11 +76,21 @@ class NotificationService {
     debugPrint('Initializing NotificationService...');
 
     try {
-      // Set the local timezone
-      final String timeZoneName =
-          await FlutterNativeTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timeZoneName));
-      debugPrint('Local timezone set to: $timeZoneName');
+      // Initialize timezone
+      try {
+        // Try to get a standard timezone name that the timezone package recognizes
+        // We'll use Europe/Istanbul as a fallback for EEST (Eastern European Summer Time)
+        final now = DateTime.now();
+        final timeZoneName = now.timeZoneName == 'EEST'
+            ? 'Europe/Istanbul'
+            : 'UTC';
+        tz.setLocalLocation(tz.getLocation(timeZoneName));
+        debugPrint('Local timezone set to: $timeZoneName');
+      } catch (e) {
+        debugPrint('Error setting timezone: $e');
+        tz.setLocalLocation(tz.getLocation('UTC'));
+        debugPrint('Fallback to UTC timezone');
+      }
 
       // Request permissions for iOS
       final hasIOSPermissions = await requestIOSPermissions();

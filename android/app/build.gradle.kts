@@ -9,6 +9,13 @@ android {
     namespace = "com.example.todoapp"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
+    
+    // Add namespace for flutter_native_timezone
+    configurations.all {
+        resolutionStrategy {
+            force("com.android.tools.build:gradle:8.3.0")
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

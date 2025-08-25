@@ -26,7 +26,6 @@ dependencies:
   audio_waveforms: ^1.0.4
   flutter_local_notifications: ^18.0.0
   timezone: ^0.9.2
-  flutter_native_timezone: ^2.0.0
 
 dev_dependencies:
   flutter_test:

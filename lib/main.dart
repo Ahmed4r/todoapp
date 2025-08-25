@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'screens/home_page.dart';
 import 'screens/splash_screen.dart';
 import 'services/theme_service.dart';
@@ -11,28 +10,33 @@ import 'services/study_note_service.dart';
 import 'services/notification_service.dart';
 
 Future<void> main() async {
-  // Ensure Flutter bindings and platform channels are initialized
+  // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     // Initialize timezone database
     tz.initializeTimeZones();
-    
-    // Get the local timezone
-    final String timeZoneName = await FlutterNativeTimezone.getLocalTimezone();
-    if (timeZoneName.isNotEmpty) {
+
+    // Get the local timezone using DateTime
+    final String timeZoneName = DateTime.now().timeZoneName;
+    debugPrint('Local timezone: $timeZoneName');
+
+    // Try to set the local timezone, fallback to UTC if it fails
+    try {
       tz.setLocalLocation(tz.getLocation(timeZoneName));
+    } catch (e) {
+      debugPrint('Error setting timezone: $e');
+      tz.setLocalLocation(tz.getLocation('UTC'));
     }
-    
+
     // Initialize notification service
     final notificationService = NotificationService();
     await notificationService.initialize();
   } catch (e) {
     debugPrint('Error during initialization: $e');
-    // Set a default timezone if we can't get the local one
+    // Set a default timezone if something goes wrong
     tz.setLocalLocation(tz.getLocation('UTC'));
   }
-
 
   runApp(
     ChangeNotifierProvider(
