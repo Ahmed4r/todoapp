@@ -1,8 +1,7 @@
-
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 # Specify platform to avoid CocoaPods auto-assigning it during install
-platform :ios, '16.0'
+platform :ios, '13.0'
 
 project 'Runner', {
   'Debug' => :debug,
@@ -14,50 +13,38 @@ project 'Runner', {
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
-    raise "Generated.xcconfig must exist. Run `flutter pub get`."
+    raise "#{generated_xcode_build_settings_path} must exist. Run flutter pub get first."
   end
-  File.read(generated_xcode_build_settings_path).each_line do |line|
+  File.foreach(generated_xcode_build_settings_path) do |line|
     matches = line.match(/FLUTTER_ROOT\=(.*)/)
     return matches[1].strip if matches
   end
-  raise "FLUTTER_ROOT not found in Generated.xcconfig"
+  raise "FLUTTER_ROOT not found."
 end
 
-require File.expand_path(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper'))
+require File.expand_path(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper'), __FILE__)
 
 flutter_ios_podfile_setup
 
-# Provide safe fallbacks in case the flutter pod helper isn't available in CI
-unless defined?(flutter_install_all_ios_pods)
-  def flutter_install_all_ios_pods(_)
-    # noop fallback - pods will be added by pod install for native plugins
-  end
-end
-
-unless defined?(flutter_post_install)
-  def flutter_post_install(installer)
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
-      end
-    end
-  end
-end
+# (Using Flutter's pod helper; ensure flutter pub get has been run so the helper exists.)
 
 target 'Runner' do
-  # If you encounter issues with Swift pods, uncomment the following line
-  # use_frameworks!
-
-  # (Removed use_frameworks!/use_modular_headers to avoid Flutter header issues on CI)
+  # If some plugin specifically requires modular headers, add that plugin's line only.
+  # use_modular_headers!  # <-- avoid globally unless required
 
   flutter_install_all_ios_pods(File.dirname(File.realpath(__FILE__)))
 end
 
 post_install do |installer|
+  # Call Flutter helper (sets correct build settings for Flutter pods)
   flutter_post_install(installer)
+
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+      # Ensure the deployment target is what you want:
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      # On Apple Silicon CI/simulators you may need to exclude arm64:
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
     end
   end
 end
