@@ -20,7 +20,7 @@ class PomodoroSession {
     required this.id,
     required this.task,
     required this.startTime,
-    this.focusDuration = 1 * 60, // 25 minutes in seconds
+    this.focusDuration = 25 * 60, // 25 minutes in seconds
     this.breakDuration = 5 * 60, // 5 minutes in seconds
     this.completedPomodoros = 0,
     this.totalFocusTimeInSeconds = 0,
@@ -60,7 +60,7 @@ class PomodoroService extends ChangeNotifier {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       task: task,
       startTime: DateTime.now(),
-      focusDuration: focusDuration ?? (1 * 60), // 25 minutes in seconds
+      focusDuration: focusDuration ?? (25 * 60), // 25 minutes in seconds
       breakDuration: breakDuration ?? (5 * 60), // 5 minute in seconds
     );
     _remainingSeconds = _currentSession!.focusDuration;

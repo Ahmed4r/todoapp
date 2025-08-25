@@ -221,6 +221,18 @@ class _PomodoroTimerState extends State<PomodoroTimer>
   }
 
   Widget _buildControls() {
+    // For break time, only show the skip button centered
+    if (_pomodoroService.state == PomodoroState.break_time) {
+      return Center(
+        child: _buildControlButton(
+          icon: Icons.skip_next_rounded,
+          color: Colors.blue,
+          onPressed: _pomodoroService.skipBreak,
+        ),
+      );
+    }
+
+    // For other states, show the regular controls
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -238,20 +250,11 @@ class _PomodoroTimerState extends State<PomodoroTimer>
             onPressed: _pomodoroService.pause,
           ),
         SizedBox(width: 16.w),
-        if (_pomodoroService.state != PomodoroState.break_time)
-          _buildControlButton(
-            icon: Icons.stop_rounded,
-            color: Colors.red,
-            onPressed: () => _showStopConfirmation(context),
-          ),
-        if (_pomodoroService.state == PomodoroState.break_time) ...[
-          SizedBox(width: 16.w),
-          _buildControlButton(
-            icon: Icons.skip_next_rounded,
-            color: Colors.blue,
-            onPressed: _pomodoroService.skipBreak,
-          ),
-        ],
+        _buildControlButton(
+          icon: Icons.stop_rounded,
+          color: Colors.red,
+          onPressed: () => _showStopConfirmation(context),
+        ),
       ],
     );
   }
