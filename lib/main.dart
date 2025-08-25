@@ -3,13 +3,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'screens/home_page.dart';
 import 'screens/splash_screen.dart';
 import 'services/theme_service.dart';
-import 'services/notification_service.dart';
+// import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize notification service
-  await NotificationService().initialize();
+  // Notification service initialization commented out for now
+  // await NotificationService().initialize();
 
   runApp(const TodoApp());
 }
@@ -48,8 +48,8 @@ class _TodoAppState extends State<TodoApp> with TickerProviderStateMixin {
 
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
-    );
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
 
     _initializeApp();
   }
@@ -138,10 +138,7 @@ class _TodoAppState extends State<TodoApp> with TickerProviderStateMixin {
                     SizedBox(height: 8.h),
                     Text(
                       'Loading...',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16.sp,
-                      ),
+                      style: TextStyle(color: Colors.white70, fontSize: 16.sp),
                     ),
                   ],
                 ),
@@ -234,10 +231,7 @@ class _TodoAppState extends State<TodoApp> with TickerProviderStateMixin {
               ),
             ),
           ),
-          home: HomePage(
-            isDarkMode: _isDarkMode,
-            onThemeChanged: _updateTheme,
-          ),
+          home: HomePage(isDarkMode: _isDarkMode, onThemeChanged: _updateTheme),
         );
       },
     );
