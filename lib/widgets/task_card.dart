@@ -43,10 +43,9 @@ class TaskCard extends StatelessWidget {
                       color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(16.w),
                       border: Border.all(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .outline
-                            .withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.outline.withValues(alpha: 0.1),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -66,9 +65,7 @@ class TaskCard extends StatelessWidget {
                             children: [
                               Text(
                                 task.title,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
+                                style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(
                                       fontWeight: FontWeight.w600,
                                       decoration: task.isCompleted
@@ -76,12 +73,12 @@ class TaskCard extends StatelessWidget {
                                           : null,
                                       color: task.isCompleted
                                           ? Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withValues(alpha: 0.5)
-                                          : Theme.of(context)
-                                              .colorScheme
-                                              .onSurface,
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.5)
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
                                       fontSize: 16.sp,
                                     ),
                               ),
@@ -89,9 +86,7 @@ class TaskCard extends StatelessWidget {
                                 SizedBox(height: 4.h),
                                 Text(
                                   task.description,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: Theme.of(context)
                                             .colorScheme
@@ -121,7 +116,9 @@ class TaskCard extends StatelessWidget {
                                             .textTheme
                                             .bodySmall
                                             ?.copyWith(
-                                              color: ColorUtils.getDueDateColor(task),
+                                              color: ColorUtils.getDueDateColor(
+                                                task,
+                                              ),
                                               fontWeight: FontWeight.w500,
                                               fontSize: 12.sp,
                                             ),
@@ -151,7 +148,10 @@ class TaskCard extends StatelessWidget {
                             ),
                             IconButton(
                               onPressed: onDelete,
-                              icon: Icon(Icons.delete_outline_rounded, size: 20.w),
+                              icon: Icon(
+                                Icons.delete_outline_rounded,
+                                size: 20.w,
+                              ),
                               color: const Color(0xFFFF3B30),
                               tooltip: 'Delete task',
                             ),
@@ -194,14 +194,15 @@ class TaskCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color:
-            ColorUtils.getCategoryColor(task.category).withValues(alpha: 0.1),
+        color: ColorUtils.getCategoryColor(
+          task.category,
+        ).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8.w),
       ),
       child: Text(
         _getCategoryShortName(task.category),
         style: TextStyle(
-          color: Colors.black87,
+          color: ColorUtils.getCategoryColor(task.category),
           fontWeight: FontWeight.w600,
           fontSize: 10.sp,
         ),
@@ -213,14 +214,15 @@ class TaskCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
       decoration: BoxDecoration(
-        color:
-            ColorUtils.getPriorityColor(task.priority).withValues(alpha: 0.1),
+        color: ColorUtils.getPriorityColor(
+          task.priority,
+        ).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6.w),
       ),
       child: Text(
         _getPriorityShortName(task.priority),
         style: TextStyle(
-          color: Colors.black87,
+          color: ColorUtils.getPriorityColor(task.priority),
           fontWeight: FontWeight.w600,
           fontSize: 10.sp,
         ),
