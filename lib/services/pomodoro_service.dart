@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/task.dart';
-import '../models/experience_system.dart';
 
 enum PomodoroState { ready, running, paused, break_time, completed }
 
@@ -96,8 +95,6 @@ class PomodoroService extends ChangeNotifier {
       } else {
         if (_state == PomodoroState.running) {
           _currentSession!.completedPomodoros++;
-          // Award XP for completing a Pomodoro
-          _awardXP(ExperienceSystem.COMPLETE_POMODORO);
           _state = PomodoroState.break_time;
           _remainingSeconds = _currentSession!.breakDuration;
           // Auto-start break timer
@@ -105,8 +102,6 @@ class PomodoroService extends ChangeNotifier {
           _timer = null;
           start();
         } else if (_state == PomodoroState.break_time) {
-          // Award XP for completing a break
-          _awardXP(ExperienceSystem.COMPLETE_BREAK);
           _state = PomodoroState.ready;
           _remainingSeconds = _currentSession!.focusDuration;
         }
@@ -160,15 +155,6 @@ class PomodoroService extends ChangeNotifier {
 
   bool _disposed = false;
 
-  // Experience system properties
-  final ExperienceSystem _xpSystem = ExperienceSystem();
-
-  // Getters for XP system
-  int get currentXP => _xpSystem.currentXP;
-  int get level => _xpSystem.level;
-  int get xpToNextLevel => _xpSystem.xpToNextLevel;
-  double get levelProgress => _xpSystem.levelProgress;
-
   @override
   void dispose() {
     _timer?.cancel();
@@ -184,11 +170,5 @@ class PomodoroService extends ChangeNotifier {
         'Once you have called dispose() on a PomodoroService, it can no longer be used.',
       );
     }
-  }
-
-  // Award XP for completing activities
-  void _awardXP(int amount) {
-    _xpSystem.addXP(amount);
-    notifyListeners();
   }
 }

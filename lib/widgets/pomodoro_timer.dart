@@ -5,7 +5,6 @@ import 'dart:math' as math;
 import '../services/pomodoro_service.dart';
 import '../services/study_note_service.dart';
 import '../models/task.dart';
-import 'level_progress.dart';
 import 'study_notes_panel.dart';
 
 class PomodoroTimer extends StatefulWidget {
@@ -78,13 +77,11 @@ class _PomodoroTimerState extends State<PomodoroTimer>
           _buildControls(),
           if (_pomodoroService.currentSession != null) ...[
             SizedBox(height: 12.h),
-            LevelProgress(pomodoroService: _pomodoroService),
-            SizedBox(height: 12.h),
-            StudyNotesPanel(
-              task: widget.task,
-              sessionId: _pomodoroService.currentSession?.id,
-              noteService: Provider.of<StudyNoteService>(context),
-            ),
+            // StudyNotesPanel(
+            //   task: widget.task,
+            //   sessionId: _pomodoroService.currentSession?.id,
+            //   noteService: Provider.of<StudyNoteService>(context),
+            // ),
             SizedBox(height: 12.h),
             _buildStats(),
           ],
