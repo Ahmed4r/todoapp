@@ -38,6 +38,10 @@ class _PomodoroTimerState extends State<PomodoroTimer>
   @override
   void dispose() {
     _animationController.dispose();
+    if (_pomodoroService.state == PomodoroState.running ||
+        _pomodoroService.state == PomodoroState.break_time) {
+      _pomodoroService.pause();
+    }
     _pomodoroService.dispose();
     super.dispose();
   }

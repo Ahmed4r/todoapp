@@ -56,6 +56,7 @@ class PomodoroService extends ChangeNotifier {
   }
 
   void startNewSession(Task task, {int? focusDuration, int? breakDuration}) {
+    _checkDisposed();
     _currentSession = PomodoroSession(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       task: task,
@@ -69,6 +70,7 @@ class PomodoroService extends ChangeNotifier {
   }
 
   void start() {
+    _checkDisposed();
     if (_currentSession == null) return;
 
     // Cancel any existing timer first
@@ -112,6 +114,7 @@ class PomodoroService extends ChangeNotifier {
   }
 
   void pause() {
+    _checkDisposed();
     if (_timer != null) {
       _timer?.cancel();
       _timer = null;
@@ -127,6 +130,7 @@ class PomodoroService extends ChangeNotifier {
   }
 
   void stop() {
+    _checkDisposed();
     _timer?.cancel();
     _timer = null;
     if (_currentSession != null) {
@@ -139,6 +143,7 @@ class PomodoroService extends ChangeNotifier {
   }
 
   void skipBreak() {
+    _checkDisposed();
     if (_state == PomodoroState.break_time) {
       _timer?.cancel();
       _timer = null;
@@ -148,9 +153,22 @@ class PomodoroService extends ChangeNotifier {
     }
   }
 
+  bool _disposed = false;
+
   @override
   void dispose() {
     _timer?.cancel();
+    _timer = null;
+    _disposed = true;
     super.dispose();
+  }
+
+  void _checkDisposed() {
+    if (_disposed) {
+      throw FlutterError(
+        'A PomodoroService was used after being disposed.\n'
+        'Once you have called dispose() on a PomodoroService, it can no longer be used.',
+      );
+    }
   }
 }
