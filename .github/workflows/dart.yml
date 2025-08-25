@@ -33,12 +33,12 @@ jobs:
       # Build .app without codesign
       - run: flutter build ios --release --no-codesign
 
-      - name: Update iOS capabilities
-        run: |
-          cd ios
-          /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes array" Runner/Info.plist
-          /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes:0 string 'remote-notification'" Runner/Info.plist
-          /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes:1 string 'fetch'" Runner/Info.plist
+      # - name: Update iOS capabilities
+      #   run: |
+      #     cd ios
+      #     /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes array" Runner/Info.plist
+      #     /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes:0 string 'remote-notification'" Runner/Info.plist
+      #     /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes:1 string 'fetch'" Runner/Info.plist
 
       # Create Payload folder and move .app inside
       - run: mkdir Payload
