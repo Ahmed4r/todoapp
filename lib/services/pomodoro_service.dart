@@ -20,8 +20,8 @@ class PomodoroSession {
     required this.id,
     required this.task,
     required this.startTime,
-    this.focusDuration = 25 * 60, // 25 minutes in seconds
-    this.breakDuration = 5 * 60, // 5 minutes in seconds
+    this.focusDuration = 1 * 60, // 25 minutes in seconds
+    this.breakDuration = 1 * 60, // 5 minutes in seconds
     this.completedPomodoros = 0,
     this.totalFocusTimeInSeconds = 0,
     this.totalBreakTimeInSeconds = 0,
@@ -60,8 +60,8 @@ class PomodoroService extends ChangeNotifier {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       task: task,
       startTime: DateTime.now(),
-      focusDuration: focusDuration ?? (25 * 60), // 25 minutes in seconds
-      breakDuration: breakDuration ?? (5 * 60), // 5 minute in seconds
+      focusDuration: focusDuration ?? (1 * 60), // 25 minutes in seconds
+      breakDuration: breakDuration ?? (1 * 60), // 5 minute in seconds
     );
     _remainingSeconds = _currentSession!.focusDuration;
     _state = PomodoroState.ready;
@@ -70,6 +70,10 @@ class PomodoroService extends ChangeNotifier {
 
   void start() {
     if (_currentSession == null) return;
+
+    // Cancel any existing timer first
+    _timer?.cancel();
+    _timer = null;
 
     // Keep break_time state if we're in break time, otherwise set to running
     if (_state != PomodoroState.break_time) {
@@ -108,14 +112,18 @@ class PomodoroService extends ChangeNotifier {
   }
 
   void pause() {
-    _timer?.cancel();
-    _timer = null;
-    _state = PomodoroState.paused;
-    notifyListeners();
+    if (_timer != null) {
+      _timer?.cancel();
+      _timer = null;
+      _state = PomodoroState.paused;
+      notifyListeners();
+    }
   }
 
   void resume() {
-    start();
+    if (_state == PomodoroState.paused) {
+      start();
+    }
   }
 
   void stop() {
