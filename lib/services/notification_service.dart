@@ -154,13 +154,7 @@ class NotificationService {
         debugPrint('Android permission granted: $granted');
       }
 
-      // Test notification
-      await showImmediateNotification(
-        title: 'Notifications Enabled',
-        body: 'You will now receive task reminders',
-      );
-
-      debugPrint('Initialization complete. Test notification sent.');
+      debugPrint('Initialization complete.');
     } catch (e, stack) {
       debugPrint('Error initializing notifications: $e');
       debugPrint('Stack trace: $stack');

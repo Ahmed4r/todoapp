@@ -36,9 +36,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // Initialize notifications
-    _initializeNotifications();
-
     _fabController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -89,15 +86,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       await prefs.setStringList('tasks', tasksJson);
     } catch (e) {
       debugPrint('Error saving tasks: $e');
-    }
-  }
-
-  Future<void> _initializeNotifications() async {
-    try {
-      await _notificationService.initialize();
-      debugPrint('Notifications initialized successfully');
-    } catch (e) {
-      debugPrint('Error initializing notifications: $e');
     }
   }
 

@@ -67,6 +67,7 @@ class _TodoAppState extends State<TodoApp> with TickerProviderStateMixin {
     super.initState();
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
+      
       vsync: this,
     );
     _slideController = AnimationController(
