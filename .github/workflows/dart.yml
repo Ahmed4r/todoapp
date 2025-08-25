@@ -1,75 +1,51 @@
-name: iOS-ipa-build
+name: Build iOS IPA (Flutter + Supabase)
 
 on:
   workflow_dispatch:
 
 jobs:
   build-ios:
-    name: 🎉 iOS Build
-    runs-on: macos-latest
+    runs-on: macos-14
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
-          architecture: x64
+          flutter-version: "3.32.5"
+          channel: stable
+          cache: true
 
-      - name: Cache Pub packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            ${{ github.workspace }}/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
+      - run: flutter pub get
 
-      - name: Get Flutter packages
-        run: flutter pub get
-
-      - name: Ensure CocoaPods is installed
+      - name: Prepare iOS Pods
         run: |
-          set -e
-          if ! command -v pod >/dev/null; then
-            echo "CocoaPods not found, installing via Homebrew..."
-            brew install cocoapods
-          else
-            echo "CocoaPods already installed: $(pod --version)"
-          fi
-
-      - name: Cache CocoaPods repos
-        uses: actions/cache@v4
-        with:
-          path: ~/Library/Caches/CocoaPods
-          key: ${{ runner.os }}-cocoapods-${{ hashFiles('ios/Podfile.lock') }}
-
-      # Clean Podfile.lock and install CocoaPods (do not modify Podfile in CI)
-      - name: Install iOS pods
-        run: |
-          set -e
-          rm -f ios/Podfile.lock
           cd ios
-          pod repo update || true
-          pod install --repo-update
-          cd ..
-      - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
+          pod repo update
+          pod install
 
-      - name: Show build outputs for debugging
-        if: failure()
-        run: |
-          echo "Build failed - list build/ios contents"
-          ls -la build || true
-          ls -la build/ios || true
+      - run: flutter precache --ios
+      - run: |
+          cd ios
+          pod repo update
+          pod install
+
+      # Build .app without codesign
+      - run: flutter build ios --release --no-codesign
+
+      # Create Payload folder and move .app inside
       - run: mkdir Payload
         working-directory: build/ios/iphoneos
 
-      - run: mv Runner.app/ Payload
+      - run: mv Runner.app Payload
         working-directory: build/ios/iphoneos
 
+      # Zip Payload as .ipa
       - name: Zip output
         run: zip -qq -r -9 FlutterIpaExport.ipa Payload
         working-directory: build/ios/iphoneos
 
+      # Upload IPA to GitHub Release
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
