@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../screens/pdf_to_summary_page.dart';
 
 class AppBarWidget extends StatelessWidget {
   final bool isDarkMode;
@@ -26,7 +27,7 @@ class AppBarWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Tasks',
+                  'Smart Todo',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: Theme.of(context).colorScheme.onSurface,
@@ -35,11 +36,11 @@ class AppBarWidget extends StatelessWidget {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  '$completedTasks of $totalTasks completed',
+                  '$completedTasks of $totalTasks tasks completed',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withOpacity(0.6),
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w500,
                     fontSize: 14.sp,
                   ),
@@ -47,14 +48,46 @@ class AppBarWidget extends StatelessWidget {
               ],
             ),
           ),
-
+          // File Summarizer Button
+          Container(
+            margin: EdgeInsets.only(right: 8.w),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(12.w),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10.w,
+                  offset: Offset(0, 2.h),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        FileSummaryPage(isDarkMode: isDarkMode),
+                  ),
+                );
+              },
+              icon: Icon(
+                Icons.summarize_rounded,
+                size: 24.w,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              tooltip: 'File Summarizer',
+            ),
+          ),
+          // Theme Toggle Button
           Container(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12.w),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10.w,
                   offset: Offset(0, 2.h),
                 ),
