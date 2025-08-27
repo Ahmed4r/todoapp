@@ -8,12 +8,16 @@ import 'screens/splash_screen.dart';
 import 'services/theme_service.dart';
 import 'services/study_note_service.dart';
 import 'services/notification_service.dart';
+import 'core/environment_config.dart';
 
 Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    // Initialize environment configuration
+    await EnvironmentConfig.initialize();
+
     // Initialize timezone database
     tz.initializeTimeZones();
 
@@ -67,7 +71,7 @@ class _TodoAppState extends State<TodoApp> with TickerProviderStateMixin {
     super.initState();
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
-      
+
       vsync: this,
     );
     _slideController = AnimationController(

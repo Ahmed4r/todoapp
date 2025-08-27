@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
 import 'package:syncfusion_flutter_pdf/pdf.dart';
+import '../core/environment_config.dart';
 
 enum FileType { pdf, word, text, unsupported }
 
@@ -56,10 +57,11 @@ class FileSummary {
 }
 
 class FileSummarizationService {
-  static const String _geminiApiKey =
-      'AIzaSyCqR4vb8lErKWqc-FbXdISi9jKeVsZtlGY'; // Replace with your actual API key
   static const String _geminiEndpoint =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+
+  // Get API key from environment
+  static String get _geminiApiKey => EnvironmentConfig.geminiApiKey;
 
   // Determine file type based on extension
   static FileType getFileType(String fileName) {
@@ -188,10 +190,9 @@ class FileSummarizationService {
 
   // Generate summary using AI (Gemini API)
   static Future<Map<String, dynamic>> generateAISummary(String text) async {
-    // Always use rule-based summary for now to ensure it works
-    // You can replace with actual API key later
-    if (_geminiApiKey == 'AIzaSyCqR4vb8lErKWqc-FbXdISi9jKeVsZtlGY' ||
-        _geminiApiKey.isEmpty) {
+    // Check if Gemini API is properly configured
+    if (!EnvironmentConfig.isGeminiConfigured) {
+      debugPrint('Gemini API not configured, using rule-based summary');
       return _generateRuleBasedSummary(text);
     }
 
