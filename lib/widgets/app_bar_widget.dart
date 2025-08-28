@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:todoapp/screens/exam_countdown_page.dart';
 import '../screens/pdf_to_summary_page.dart';
 
 class AppBarWidget extends StatelessWidget {
@@ -46,6 +47,35 @@ class AppBarWidget extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+          // Exam Countdown Button
+          Container(
+            margin: EdgeInsets.only(right: 8.w),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(12.w),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10.w,
+                  offset: Offset(0, 2.h),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ExamCountdownPage()),
+                );
+              },
+              icon: Icon(
+                Icons.calendar_month,
+                size: 24.w,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              tooltip: 'Exam Countdown',
             ),
           ),
           // File Summarizer Button

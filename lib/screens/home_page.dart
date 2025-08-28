@@ -7,7 +7,16 @@ import '../widgets/task_card.dart';
 import '../widgets/add_task_dialog.dart';
 import '../widgets/edit_task_dialog.dart';
 import '../widgets/app_bar_widget.dart';
+import '../widgets/motivational_message_widget.dart';
+import '../screens/daily_motivation_page.dart';
+import '../screens/ai_insights_page.dart';
+import '../screens/statistics_page.dart';
+import '../screens/chatbot_page.dart';
+import '../screens/exam_countdown_page.dart';
 import '../services/notification_service.dart';
+import '../services/pomodoro_service.dart';
+import '../services/motivational_message_service.dart';
+import '../services/ai_insights_service.dart';
 
 class HomePage extends StatefulWidget {
   final bool isDarkMode;
@@ -26,6 +35,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final List<Task> _tasks = [];
   final NotificationService _notificationService = NotificationService();
+  final PomodoroService _pomodoroService = PomodoroService();
+  int _todayPomodoroCount = 0;
+  int _todayCompletedTasks = 0;
 
   late AnimationController _fabController;
   late AnimationController _statsController;
@@ -66,11 +78,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     try {
       final prefs = await SharedPreferences.getInstance();
       final tasksJson = prefs.getStringList('tasks') ?? [];
+
+      // Load today's pomodoro count
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      final todayPomodoroCount = await _pomodoroService.getTodayPomodoroCount();
+      final todayTasksCount = prefs.getInt('completed_tasks_$today') ?? 0;
+
       setState(() {
         _tasks.clear();
         _tasks.addAll(
           tasksJson.map((json) => Task.fromJson(jsonDecode(json))).toList(),
         );
+        _todayPomodoroCount = todayPomodoroCount;
+        _todayCompletedTasks = todayTasksCount;
       });
     } catch (e) {
       debugPrint('Error loading tasks: $e');
@@ -100,6 +120,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             SizedBox(height: 8.h),
             _buildStatsSection(),
             SizedBox(height: 12.h),
+            _buildMotivationalMessage(),
+            SizedBox(height: 12.h),
+            _buildQuickActions(),
+            SizedBox(height: 12.h),
             _buildTaskList(),
           ],
         ),
@@ -126,6 +150,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final completedTasks = _tasks.where((task) => task.isCompleted).length;
     final pendingTasks = totalTasks - completedTasks;
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return FadeTransition(
       opacity: _statsFadeAnimation,
       child: Container(
@@ -137,7 +164,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 'Total',
                 totalTasks.toString(),
                 Icons.checklist_rounded,
-                const Color(0xFF007AFF),
+                Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF5AC8FA)
+                    : const Color(0xFF007AFF),
               ),
             ),
             SizedBox(width: 12.w),
@@ -146,7 +175,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 'Completed',
                 completedTasks.toString(),
                 Icons.check_circle_rounded,
-                const Color(0xFF34C759),
+                Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF30D158)
+                    : const Color(0xFF34C759),
               ),
             ),
             SizedBox(width: 12.w),
@@ -155,7 +186,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 'Pending',
                 pendingTasks.toString(),
                 Icons.schedule_rounded,
-                const Color(0xFFFF9500),
+                Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFFFFCC02)
+                    : const Color(0xFFFF9500),
               ),
             ),
           ],
@@ -170,6 +203,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     IconData icon,
     Color color,
   ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -177,7 +212,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(16.w),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.05),
             blurRadius: 10.w,
             offset: Offset(0, 2.h),
           ),
@@ -205,16 +242,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Text(
             title,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: widget.isDarkMode
-                  ? Colors.white.withOpacity(0.6)
-                  : Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.6),
+              color: colorScheme.onSurface.withOpacity(0.6),
               fontWeight: FontWeight.w500,
               fontSize: 12.sp,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMotivationalMessage() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const DailyMotivationPage()),
+        );
+      },
+      child: CompactMotivationalMessage(
+        pomodoroCount: _todayPomodoroCount,
+        tasksCount: _todayCompletedTasks,
       ),
     );
   }
@@ -256,7 +303,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.05),
                       blurRadius: 20.w,
                       offset: Offset(0, 4.h),
                     ),
@@ -296,7 +346,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 label: Text('Add Task', style: TextStyle(fontSize: 16.sp)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: EdgeInsets.symmetric(
                     horizontal: 24.w,
                     vertical: 12.h,
@@ -318,7 +368,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         icon: Icon(Icons.add_rounded, size: 20.w),
         label: Text('Add Task', style: TextStyle(fontSize: 16.sp)),
         backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 8,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.w),
@@ -420,6 +470,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void _toggleTaskComplete(Task task) {
+    final oldProgress = _todayPomodoroCount + _todayCompletedTasks;
+
     setState(() {
       final index = _tasks.indexWhere((t) => t.id == task.id);
       if (index != -1) {
@@ -429,16 +481,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         );
         _tasks[index] = updatedTask;
 
-        // Cancel notifications if task is completed
+        // Update daily task completion count
         if (updatedTask.isCompleted) {
+          _todayCompletedTasks++;
+          _saveDailyTaskCount();
           _notificationService.cancelTaskReminder(updatedTask);
-        } else if (updatedTask.dueDate != null) {
-          // Re-schedule notifications if task is uncompleted
-          _notificationService.scheduleTaskReminder(updatedTask);
+
+          // Update analytics for AI insights
+          AIInsightsService.updateAnalytics(
+            taskCompleted: true,
+            productiveHour: DateTime.now().hour,
+            taskCategory: updatedTask.category.name,
+          );
+        } else {
+          _todayCompletedTasks = (_todayCompletedTasks - 1)
+              .clamp(0, double.infinity)
+              .toInt();
+          _saveDailyTaskCount();
+          if (updatedTask.dueDate != null) {
+            // Re-schedule notifications if task is uncompleted
+            _notificationService.scheduleTaskReminder(updatedTask);
+          }
         }
       }
     });
+
     _saveTasks();
+
+    // Check if we should refresh the motivational message
+    final newProgress = _todayPomodoroCount + _todayCompletedTasks;
+    if (MotivationalMessageService.shouldRefreshMessage(
+      oldProgress,
+      newProgress,
+    )) {
+      MotivationalMessageService.refreshDailyMessage();
+    }
   }
 
   void _deleteTask(Task task) {
@@ -449,5 +526,215 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       _tasks.removeWhere((t) => t.id == task.id);
     });
     _saveTasks();
+  }
+
+  @override
+  void dispose() {
+    _fabController.dispose();
+    _statsController.dispose();
+    _pomodoroService.dispose();
+    super.dispose();
+  }
+
+  // Method to be called when a pomodoro session is completed
+  Future<void> updatePomodoroCount() async {
+    final oldProgress = _todayPomodoroCount + _todayCompletedTasks;
+
+    try {
+      final newCount = await _pomodoroService.getTodayPomodoroCount();
+
+      setState(() {
+        _todayPomodoroCount = newCount;
+      });
+
+      debugPrint('Pomodoro count updated: $newCount');
+
+      // Update analytics for AI insights
+      if (newCount > oldProgress - _todayCompletedTasks) {
+        AIInsightsService.updateAnalytics(
+          pomodoroCompleted: true,
+          productiveHour: DateTime.now().hour,
+          sessionLength: 25.0, // Standard pomodoro length
+        );
+      }
+
+      // Check if we should refresh the motivational message
+      final newProgress = _todayPomodoroCount + _todayCompletedTasks;
+      if (MotivationalMessageService.shouldRefreshMessage(
+        oldProgress,
+        newProgress,
+      )) {
+        MotivationalMessageService.refreshDailyMessage();
+      }
+    } catch (e) {
+      debugPrint('Error updating pomodoro count: $e');
+    }
+  }
+
+  Widget _buildQuickActions() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Column(
+        children: [
+          // First row with AI Insights and Statistics
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionCard(
+                  title: 'النصائح الذكية',
+                  subtitle: 'تحليل مدعوم بالذكاء الاصطناعي',
+                  icon: Icons.psychology_outlined,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const AIInsightsPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildActionCard(
+                  title: 'الإحصائيات',
+                  subtitle: 'تقرير شامل عن تقدمك',
+                  icon: Icons.analytics_outlined,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const StatisticsPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          // Second row with Exam Countdown and Chatbot
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionCard(
+                  title: 'عد تنازلي للامتحانات',
+                  subtitle: 'راقب امتحاناتك واستعد لها',
+                  icon: Icons.schedule,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const ExamCountdownPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildActionCard(
+                  title: 'المساعد الذكي',
+                  subtitle: 'دردش واحصل على نصائح شخصية',
+                  icon: Icons.smart_toy_outlined,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFE91E63), Color(0xFF9C27B0)],
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const ChatbotPage(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Gradient gradient,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardTextColor = isDark
+        ? theme.colorScheme.onPrimaryContainer
+        : Colors.white;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          gradient: isDark
+              ? LinearGradient(
+                  colors: [
+                    theme.colorScheme.primaryContainer,
+                    theme.colorScheme.secondaryContainer,
+                  ],
+                )
+              : gradient,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  (isDark ? theme.colorScheme.primary : gradient.colors.first)
+                      .withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: cardTextColor, size: 28.sp),
+            SizedBox(height: 8.h),
+            Text(
+              title,
+              style: TextStyle(
+                color: cardTextColor,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: cardTextColor.withOpacity(0.9),
+                fontSize: 12.sp,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Save daily task completion count
+  Future<void> _saveDailyTaskCount() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      await prefs.setInt('completed_tasks_$today', _todayCompletedTasks);
+      debugPrint('Daily task count saved: $_todayCompletedTasks');
+    } catch (e) {
+      debugPrint('Error saving daily task count: $e');
+    }
   }
 }

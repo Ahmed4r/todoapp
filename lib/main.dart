@@ -8,6 +8,8 @@ import 'screens/splash_screen.dart';
 import 'services/theme_service.dart';
 import 'services/study_note_service.dart';
 import 'services/notification_service.dart';
+import 'services/chatbot_service.dart';
+import 'services/exam_countdown_service.dart';
 import 'core/environment_config.dart';
 
 Future<void> main() async {
@@ -36,6 +38,9 @@ Future<void> main() async {
     // Initialize notification service
     final notificationService = NotificationService();
     await notificationService.initialize();
+
+    // Initialize chatbot service
+    await ChatbotService.initialize();
   } catch (e) {
     debugPrint('Error during initialization: $e');
     // Set a default timezone if something goes wrong
@@ -43,8 +48,11 @@ Future<void> main() async {
   }
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => StudyNoteService(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => StudyNoteService()),
+        ChangeNotifierProvider(create: (_) => ExamCountdownService()),
+      ],
       child: const TodoApp(),
     ),
   );

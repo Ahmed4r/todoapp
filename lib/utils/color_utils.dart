@@ -2,57 +2,89 @@ import 'package:flutter/material.dart';
 import '../models/task.dart';
 
 class ColorUtils {
-  static Color getCategoryColor(TaskCategory category) {
+  static Color getCategoryColor(
+    TaskCategory category, [
+    BuildContext? context,
+  ]) {
+    final isDark = context != null
+        ? Theme.of(context).brightness == Brightness.dark
+        : false;
     switch (category) {
       case TaskCategory.work:
-        return const Color(0xFF007AFF);
+        return isDark ? const Color(0xFF5AC8FA) : const Color(0xFF007AFF);
       case TaskCategory.personal:
-        return const Color(0xFF34C759);
+        return isDark ? const Color(0xFF30D158) : const Color(0xFF34C759);
       case TaskCategory.study:
-        return const Color(0xFFFF9500);
+        return isDark ? const Color(0xFFFFCC02) : const Color(0xFFFF9500);
       case TaskCategory.health:
-        return const Color(0xFFFF3B30);
+        return isDark ? const Color(0xFFFF6961) : const Color(0xFFFF3B30);
       case TaskCategory.creative:
-        return const Color(0xFFAF52DE);
+        return isDark ? const Color(0xFFBF5AF2) : const Color(0xFFAF52DE);
       case TaskCategory.travel:
-        return const Color(0xFF5AC8FA);
+        return isDark ? const Color(0xFF64D2FF) : const Color(0xFF5AC8FA);
       case TaskCategory.shopping:
-        return const Color(0xFFFF9500);
+        return isDark ? const Color(0xFFFFCC02) : const Color(0xFFFF9500);
       case TaskCategory.family:
-        return const Color(0xFFFF2D92);
+        return isDark ? const Color(0xFFFF375F) : const Color(0xFFFF2D92);
     }
   }
 
-  static Color getPriorityColor(TaskPriority priority) {
+  static Color getPriorityColor(
+    TaskPriority priority, [
+    BuildContext? context,
+  ]) {
+    final isDark = context != null
+        ? Theme.of(context).brightness == Brightness.dark
+        : false;
     switch (priority) {
       case TaskPriority.low:
-        return const Color(0xFF34C759);
+        return isDark ? const Color(0xFF30D158) : const Color(0xFF34C759);
       case TaskPriority.medium:
-        return const Color(0xFFFF9500);
+        return isDark ? const Color(0xFFFFCC02) : const Color(0xFFFF9500);
       case TaskPriority.high:
-        return const Color(0xFFFF3B30);
+        return isDark ? const Color(0xFFFF6961) : const Color(0xFFFF3B30);
       case TaskPriority.urgent:
-        return const Color(0xFFAF52DE);
+        return isDark ? const Color(0xFFBF5AF2) : const Color(0xFFAF52DE);
     }
   }
 
-  static Color getDueDateColor(Task task) {
-    if (task.dueDate == null) return Colors.grey;
-    if (task.isCompleted) return const Color(0xFF34C759);
+  static Color getDueDateColor(Task task, [BuildContext? context]) {
+    if (task.dueDate == null)
+      return context != null
+          ? Theme.of(context).colorScheme.outline
+          : Colors.grey;
+    if (task.isCompleted) {
+      final isDark = context != null
+          ? Theme.of(context).brightness == Brightness.dark
+          : false;
+      return isDark ? const Color(0xFF30D158) : const Color(0xFF34C759);
+    }
 
     final now = DateTime.now();
     final dueDate = task.dueDate!;
+    final isDark = context != null
+        ? Theme.of(context).brightness == Brightness.dark
+        : false;
 
-    if (dueDate.isBefore(now)) return const Color(0xFFFF3B30); // Overdue
+    if (dueDate.isBefore(now))
+      return isDark
+          ? const Color(0xFFFF6961)
+          : const Color(0xFFFF3B30); // Overdue
     if (dueDate.day == now.day &&
         dueDate.month == now.month &&
         dueDate.year == now.year) {
-      return const Color(0xFFFF9500); // Due today
+      return isDark
+          ? const Color(0xFFFFCC02)
+          : const Color(0xFFFF9500); // Due today
     }
     if (dueDate.difference(now).inDays <= 1) {
-      return const Color(0xFFFF9500); // Due tomorrow
+      return isDark
+          ? const Color(0xFFFFCC02)
+          : const Color(0xFFFF9500); // Due tomorrow
     }
-    return Colors.grey; // Future date
+    return context != null
+        ? Theme.of(context).colorScheme.outline
+        : Colors.grey; // Future date
   }
 
   static String getDueDateText(Task task) {
@@ -83,17 +115,19 @@ class ColorUtils {
     if (dueDate.isBefore(now)) {
       return hasTime ? 'Overdue at ${_formatTime(dueDate)}' : 'Overdue';
     }
-    
+
     if (dueDate.day == now.day &&
         dueDate.month == now.month &&
         dueDate.year == now.year) {
       return hasTime ? 'Due today at ${_formatTime(dueDate)}' : 'Due today';
     }
-    
+
     if (dueDate.difference(now).inDays <= 1) {
-      return hasTime ? 'Due tomorrow at ${_formatTime(dueDate)}' : 'Due tomorrow';
+      return hasTime
+          ? 'Due tomorrow at ${_formatTime(dueDate)}'
+          : 'Due tomorrow';
     }
-    
+
     if (hasTime) {
       return 'Due ${dueDate.day}/${dueDate.month}/${dueDate.year} at ${_formatTime(dueDate)}';
     } else {

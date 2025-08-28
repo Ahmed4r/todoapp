@@ -41,7 +41,9 @@ class _StudyNotesPanelState extends State<StudyNotesPanel> {
         borderRadius: BorderRadius.circular(16.w),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

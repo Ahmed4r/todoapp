@@ -117,7 +117,7 @@ class _FileSummaryPageState extends State<FileSummaryPage>
     return AppBar(
       title: Text(
         'File Summarizer',
-        style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600),
+        style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600 ,color: widget.isDarkMode ? Colors.white : Colors.black),
       ),
       backgroundColor: Colors.transparent,
       elevation: 0,

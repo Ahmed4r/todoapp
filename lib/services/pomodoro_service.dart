@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/task.dart';
 
 enum PomodoroState { ready, running, paused, break_time, completed }
@@ -95,6 +96,8 @@ class PomodoroService extends ChangeNotifier {
       } else {
         if (_state == PomodoroState.running) {
           _currentSession!.completedPomodoros++;
+          // Save completed pomodoro to daily count
+          _saveDailyPomodoroCount();
           _state = PomodoroState.break_time;
           _remainingSeconds = _currentSession!.breakDuration;
           // Auto-start break timer
@@ -169,6 +172,33 @@ class PomodoroService extends ChangeNotifier {
         'A PomodoroService was used after being disposed.\n'
         'Once you have called dispose() on a PomodoroService, it can no longer be used.',
       );
+    }
+  }
+
+  // Save completed pomodoro to daily count
+  Future<void> _saveDailyPomodoroCount() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      final currentCount = prefs.getInt('pomodoro_count_$today') ?? 0;
+      final newCount = currentCount + 1;
+
+      await prefs.setInt('pomodoro_count_$today', newCount);
+      debugPrint('Pomodoro completed! Daily count: $newCount');
+    } catch (e) {
+      debugPrint('Error saving daily pomodoro count: $e');
+    }
+  }
+
+  // Get today's pomodoro count
+  Future<int> getTodayPomodoroCount() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      return prefs.getInt('pomodoro_count_$today') ?? 0;
+    } catch (e) {
+      debugPrint('Error getting daily pomodoro count: $e');
+      return 0;
     }
   }
 }

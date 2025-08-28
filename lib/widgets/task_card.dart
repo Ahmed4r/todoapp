@@ -72,7 +72,10 @@ class TaskCard extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withValues(alpha: 0.05),
                             blurRadius: 10.w,
                             offset: Offset(0, 2.h),
                           ),
@@ -82,7 +85,7 @@ class TaskCard extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              _buildCheckbox(),
+                              _buildCheckbox(context),
                               SizedBox(width: 16.w),
                               Expanded(
                                 child: Column(
@@ -137,6 +140,7 @@ class TaskCard extends StatelessWidget {
                                             size: 14.w,
                                             color: ColorUtils.getDueDateColor(
                                               task,
+                                              context,
                                             ),
                                           ),
                                           SizedBox(width: 4.w),
@@ -152,6 +156,7 @@ class TaskCard extends StatelessWidget {
                                                     color:
                                                         ColorUtils.getDueDateColor(
                                                           task,
+                                                          context,
                                                         ),
                                                     fontWeight: FontWeight.w500,
                                                     fontSize: 12.sp,
@@ -164,9 +169,9 @@ class TaskCard extends StatelessWidget {
                                     SizedBox(height: 8.h),
                                     Row(
                                       children: [
-                                        _buildCategoryChip(),
+                                        _buildCategoryChip(context),
                                         SizedBox(width: 8.w),
-                                        _buildPriorityChip(),
+                                        _buildPriorityChip(context),
                                       ],
                                     ),
                                   ],
@@ -238,7 +243,12 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCheckbox() {
+  Widget _buildCheckbox(BuildContext context) {
+    final theme = Theme.of(context);
+    final completedColor = theme.brightness == Brightness.dark
+        ? const Color(0xFF30D158)
+        : const Color(0xFF34C759);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       width: 24.w,
@@ -247,31 +257,36 @@ class TaskCard extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(
           color: task.isCompleted
-              ? const Color(0xFF34C759)
-              : Colors.grey.withValues(alpha: 0.3),
+              ? completedColor
+              : theme.colorScheme.outline.withValues(alpha: 0.3),
           width: 2.w,
         ),
-        color: task.isCompleted ? const Color(0xFF34C759) : Colors.transparent,
+        color: task.isCompleted ? completedColor : Colors.transparent,
       ),
       child: task.isCompleted
-          ? Icon(Icons.check_rounded, size: 16.w, color: Colors.white)
+          ? Icon(
+              Icons.check_rounded,
+              size: 16.w,
+              color: theme.colorScheme.onPrimary,
+            )
           : null,
     );
   }
 
-  Widget _buildCategoryChip() {
+  Widget _buildCategoryChip(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: ColorUtils.getCategoryColor(
           task.category,
+          context,
         ).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8.w),
       ),
       child: Text(
         _getCategoryShortName(task.category),
         style: TextStyle(
-          color: ColorUtils.getCategoryColor(task.category),
+          color: ColorUtils.getCategoryColor(task.category, context),
           fontWeight: FontWeight.w600,
           fontSize: 10.sp,
         ),
@@ -279,19 +294,20 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPriorityChip() {
+  Widget _buildPriorityChip(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
       decoration: BoxDecoration(
         color: ColorUtils.getPriorityColor(
           task.priority,
+          context,
         ).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6.w),
       ),
       child: Text(
         _getPriorityShortName(task.priority),
         style: TextStyle(
-          color: ColorUtils.getPriorityColor(task.priority),
+          color: ColorUtils.getPriorityColor(task.priority, context),
           fontWeight: FontWeight.w600,
           fontSize: 10.sp,
         ),
