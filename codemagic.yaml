@@ -1,124 +1,63 @@
-name: Build iOS IPA (Flutter + Supabase + AI Features)
-
-on:
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        description: "Release tag (e.g., v1.0.1)"
-        required: false
-        default: "v1.0"
-      release_notes:
-        description: "Release notes"
-        required: false
-        default: "iOS build with file summarization and AI features"
-
-jobs:
-  build-ios:
-    runs-on: macos-14
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.32.5"
-          channel: stable
-          cache: true
+workflows:
+  ios-ipa:
+    name: Build iOS IPA (Flutter + Supabase + AI Features)
+    environment:
+      flutter: 3.32.5
+      xcode: 15.0
+      vars:
+        GEMINI_API_KEY: $GEMINI_API_KEY
+    scripts:
+      - name: Checkout source
+        script: |
+          echo "✅ Source code checked out"
 
       - name: Create .env file
-        run: |
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+        script: |
+          echo "GEMINI_API_KEY=$GEMINI_API_KEY" > .env
           echo "# Environment variables for CI/CD build" >> .env
-
-      - run: flutter pub get
-
-      - name: Verify environment setup
-        run: |
           if [ -f .env ]; then
             echo "✅ .env file created successfully"
-            echo "📝 File contents (redacted):"
             sed 's/=.*/=***REDACTED***/g' .env
           else
             echo "⚠️ .env file not found - app will use fallback mode"
           fi
 
+      - name: Install dependencies
+        script: |
+          flutter pub get
+
       - name: Prepare iOS Pods
-        run: |
+        script: |
           cd ios
           pod repo update
           pod install
 
-      - run: flutter precache --ios
-      - run: |
-          cd ios
-          pod repo update
-          pod install
+      - name: Precache iOS
+        script: |
+          flutter precache --ios
 
-      # Build .app without codesign
-      - run: flutter build ios --release --no-codesign
+      - name: Build iOS app (unsigned)
+        script: |
+          flutter build ios --release --no-codesign
 
-      # - name: Update iOS capabilities
-      #   run: |
-      #     cd ios
-      #     /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes array" Runner/Info.plist
-      #     /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes:0 string 'remote-notification'" Runner/Info.plist
-      #     /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes:1 string 'fetch'" Runner/Info.plist
-
-      # Create Payload folder and move .app inside
-      - run: mkdir Payload
-        working-directory: build/ios/iphoneos
-
-      - run: mv Runner.app Payload
-        working-directory: build/ios/iphoneos
-
-      # Zip Payload as .ipa
-      - name: Zip output
-        run: zip -qq -r -9 FlutterIpaExport.ipa Payload
-        working-directory: build/ios/iphoneos
+      - name: Package IPA
+        script: |
+          cd build/ios/iphoneos
+          mkdir Payload
+          mv Runner.app Payload
+          zip -qq -r -9 FlutterIpaExport.ipa Payload
 
       - name: Create build info
-        run: |
+        script: |
+          cd build/ios/iphoneos
           echo "# Build Information" > build_info.txt
           echo "Build Date: $(date)" >> build_info.txt
           echo "Flutter Version: 3.32.5" >> build_info.txt
           echo "Platform: iOS" >> build_info.txt
           echo "Features: File Summarization, AI Integration" >> build_info.txt
           echo "API Support: Gemini AI (configured via secrets)" >> build_info.txt
-          echo "Build Number: ${{ github.run_number }}" >> build_info.txt
-        working-directory: build/ios/iphoneos
+          echo "Build Number: $CM_BUILD_ID" >> build_info.txt
 
-      # Upload IPA to GitHub Release
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/ios/iphoneos/FlutterIpaExport.ipa
-          tag: ${{ github.event.inputs.release_tag || 'v1.0' }}
-          overwrite: true
-          body: |
-            ${{ github.event.inputs.release_notes || 'iOS build with file summarization and AI features' }}
-
-            ## 🚀 Features Included:
-            - ✅ File Summarization (PDF, Text, Markdown)
-            - ✅ AI-Powered Summaries (with Gemini API)
-            - ✅ Cross-platform compatibility
-            - ✅ Offline fallback mode
-
-            ## 📱 Installation:
-            1. Download the IPA file
-            2. Install using AltStore, Sideloadly, or enterprise distribution
-            3. Trust the developer certificate in Settings
-
-            ## 🔧 Environment:
-            - Flutter: 3.32.5
-            - Built on: macOS 14
-            - Build date: ${{ github.run_number }}
-
-      - name: Upload build info
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/ios/iphoneos/build_info.txt
-          asset_name: build_info.txt
-          tag: ${{ github.event.inputs.release_tag || 'v1.0' }}
-          overwrite: true
+    artifacts:
+      - build/ios/iphoneos/FlutterIpaExport.ipa
+      - build/ios/iphoneos/build_info.txt
