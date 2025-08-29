@@ -596,6 +596,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   },
                 ),
               ),
+              // Expanded(
+              //   child: _buildActionCard(
+              //     title: 'عد تنازلي للامتحانات',
+              //     subtitle: 'راقب امتحاناتك واستعد لها',
+              //     icon: Icons.schedule,
+              //     gradient: const LinearGradient(
+              //       colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+              //     ),
+              //     onTap: () {
+              //       Navigator.of(context).push(
+              //         MaterialPageRoute(
+              //           builder: (context) => const ExamCountdownPage(),
+              //         ),
+              //       );
+              //     },
+              //   ),
+              // ),
               SizedBox(width: 12.w),
               Expanded(
                 child: _buildActionCard(
@@ -618,45 +635,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           SizedBox(height: 12.h),
           // Second row with Exam Countdown and Chatbot
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  title: 'عد تنازلي للامتحانات',
-                  subtitle: 'راقب امتحاناتك واستعد لها',
-                  icon: Icons.schedule,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const ExamCountdownPage(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: _buildActionCard(
-                  title: 'المساعد الذكي',
-                  subtitle: 'دردش واحصل على نصائح شخصية',
-                  icon: Icons.smart_toy_outlined,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFE91E63), Color(0xFF9C27B0)],
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const ChatbotPage(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+          // Row(
+          //   children: [
+
+          //     SizedBox(width: 12.w),
+          //     Expanded(
+          //       child: _buildActionCard(
+          //         title: 'المساعد الذكي',
+          //         subtitle: 'دردش واحصل على نصائح شخصية',
+          //         icon: Icons.smart_toy_outlined,
+          //         gradient: const LinearGradient(
+          //           colors: [Color(0xFFE91E63), Color(0xFF9C27B0)],
+          //         ),
+          //         onTap: () {
+          //           Navigator.of(context).push(
+          //             MaterialPageRoute(
+          //               builder: (context) => const ChatbotPage(),
+          //             ),
+          //           );
+          //         },
+          //       ),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );
